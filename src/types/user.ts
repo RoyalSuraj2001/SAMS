@@ -1,21 +1,19 @@
 
-export type UserRole = "student" | "teacher";
-
-export interface User {
+export interface BaseUserData {
   uid: string;
-  email: string;
   name: string;
-  role: UserRole;
+  email: string;
+  role: "student" | "teacher";
 }
 
-export interface Student extends User {
+export interface StudentData extends BaseUserData {
   role: "student";
   studentId: string;
 }
 
-export interface Teacher extends User {
+export interface TeacherData extends BaseUserData {
   role: "teacher";
   teacherId: string;
 }
 
-export type UserData = Student | Teacher;
+export type UserData = StudentData | TeacherData;

@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, orderBy, DocumentData, where } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, DocumentData, where, limit as limitQuery } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,18 +39,16 @@ const AttendanceList = ({ userData, limit }: AttendanceListProps) => {
 
     if (userData.role === "student") {
       collectionPath = `students/${userData.uid}/attendance`;
-      queryRef = query(
-        collection(db, collectionPath),
-        orderBy("timestamp", "desc"),
-        limit ? limit : query()
-      );
+      const collectionRef = collection(db, collectionPath);
+      queryRef = limit 
+        ? query(collectionRef, orderBy("timestamp", "desc"), limitQuery(limit))
+        : query(collectionRef, orderBy("timestamp", "desc"));
     } else {
       collectionPath = `teachers/${userData.uid}/scanned_attendance`;
-      queryRef = query(
-        collection(db, collectionPath),
-        orderBy("timestamp", "desc"),
-        limit ? limit : query()
-      );
+      const collectionRef = collection(db, collectionPath);
+      queryRef = limit 
+        ? query(collectionRef, orderBy("timestamp", "desc"), limitQuery(limit))
+        : query(collectionRef, orderBy("timestamp", "desc"));
     }
 
     const unsubscribe = onSnapshot(
