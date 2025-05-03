@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Student } from "@/types/user";
+import { StudentData } from "@/types/user";
 import { useToast } from "@/components/ui/use-toast";
 
 interface QRCodeDisplayProps {
-  student: Student;
+  student: StudentData;
 }
 
 const QRCodeDisplay = ({ student }: QRCodeDisplayProps) => {

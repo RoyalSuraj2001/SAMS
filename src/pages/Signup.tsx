@@ -1,22 +1,21 @@
-
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { StudentData, TeacherData, UserData } from "@/types/user";
 
 const Signup = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [id, setId] = useState("");
   const [role, setRole] = useState<"student" | "teacher">("student");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [id, setId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   
   const { signup } = useAuth();
   const navigate = useNavigate();
@@ -25,35 +24,43 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (password !== confirmPassword) {
+    if (!name || !email || !password || !id) {
       toast({
         variant: "destructive",
-        title: "Passwords do not match",
-        description: "Please ensure both passwords match.",
+        title: "Error",
+        description: "Please fill in all fields",
       });
       return;
     }
-    
+
     try {
-      setIsSubmitting(true);
+      setIsLoading(true);
       
+      let userData: Omit<StudentData | TeacherData, "uid">;
+      
+      // Create user data based on role
       if (role === "student") {
-        await signup(email, password, {
+        userData = {
           name,
-          role: "student",
-          studentId: id,
-        });
+          email,
+          role,
+          studentId: id
+        } as Omit<StudentData, "uid">;
       } else {
-        await signup(email, password, {
+        userData = {
           name,
-          role: "teacher",
-          teacherId: id,
-        });
+          email,
+          role,
+          teacherId: id
+        } as Omit<TeacherData, "uid">;
       }
       
+      await signup(email, password, userData);
+      // Redirection is handled in the AuthContext after successful signup
     } catch (error) {
-      console.error("Signup error:", error);
-      setIsSubmitting(false);
+      // Error handling is done in the AuthContext
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -147,8 +154,8 @@ const Signup = () => {
               />
             </div>
             
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Signing up..." : "Sign Up"}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Signing up..." : "Sign Up"}
             </Button>
           </form>
         </CardContent>

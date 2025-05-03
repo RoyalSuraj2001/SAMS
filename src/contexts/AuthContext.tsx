@@ -86,7 +86,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function login(email: string, password: string) {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Fetch user data to determine role for redirection
+      try {
+        // Check students collection first
+        const studentDoc = await getDoc(doc(db, "students", user.uid));
+        
+        if (studentDoc.exists()) {
+          const studentData = studentDoc.data() as UserData;
+          navigate("/student/dashboard");
+        } else {
+          // If not a student, check teachers collection
+          const teacherDoc = await getDoc(doc(db, "teachers", user.uid));
+          
+          if (teacherDoc.exists()) {
+            const teacherData = teacherDoc.data() as UserData;
+            navigate("/teacher/dashboard");
+          } else {
+            console.error("No user data found");
+            toast({
+              variant: "destructive",
+              title: "Login error",
+              description: "User data not found",
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data after login:", error);
+      }
+
       toast({
         title: "Welcome back",
         description: "You've successfully logged in!",

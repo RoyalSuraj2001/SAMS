@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import QRScanner from "@/components/QRScanner";
-import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, addDoc, collection, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@/components/ui/use-toast";
@@ -37,79 +37,41 @@ const QRScanPage = () => {
     try {
       setIsProcessing(true);
 
-      // Check if student exists
-      const studentRef = doc(db, "students", studentId);
-      const studentDoc = await getDoc(studentRef);
-
-      if (!studentDoc.exists()) {
-        // Try to find student by studentId field
-        const studentsRef = collection(db, "students");
-        const studentSnapshot = await getDoc(doc(studentsRef, studentId));
-
-        if (!studentSnapshot.exists()) {
-          setScanResult({
-            success: false,
-            studentId,
-            message: "No student found with this ID.",
-          });
-          setIsScanComplete(true);
-          setIsProcessing(false);
-          return;
-        }
+      // First try by document ID
+      const studentDocRef = doc(db, "students", studentId);
+      const studentDoc = await getDoc(studentDocRef);
+      
+      if (studentDoc.exists()) {
+        const studentData = studentDoc.data();
+        await processAttendance(studentData, studentId);
+        return;
       }
-
-      // Get student data
-      const studentData = studentDoc.exists() 
-        ? studentDoc.data()
-        : (await getDoc(doc(collection(db, "students"), studentId))).data();
-
-      if (!studentData) {
+      
+      // If not found by ID, try querying by studentId field
+      const studentsQuery = query(
+        collection(db, "students"),
+        where("studentId", "==", studentId)
+      );
+      
+      const querySnapshot = await getDocs(studentsQuery);
+      
+      if (querySnapshot.empty) {
         setScanResult({
           success: false,
           studentId,
-          message: "Failed to retrieve student information.",
+          message: "No student found with this ID.",
         });
         setIsScanComplete(true);
         setIsProcessing(false);
         return;
       }
-
-      const studentName = studentData.name;
-      const recordId = uuidv4();
-      const timestamp = serverTimestamp();
-
-      // Add attendance record to student's collection
-      await addDoc(collection(db, `students/${studentId}/attendance`), {
-        id: recordId,
-        timestamp,
-        teacherId: teacher.teacherId,
-        teacherName: teacher.name,
-        studentId,
-        studentName,
-      });
-
-      // Add attendance record to teacher's collection
-      await addDoc(collection(db, `teachers/${teacher.uid}/scanned_attendance`), {
-        id: recordId,
-        timestamp,
-        teacherId: teacher.teacherId,
-        teacherName: teacher.name,
-        studentId,
-        studentName,
-      });
-
-      // Update scan result
-      setScanResult({
-        success: true,
-        studentId,
-        studentName,
-        message: "Attendance marked successfully!",
-      });
       
-      toast({
-        title: "Attendance Marked",
-        description: `${studentName} has been marked present.`,
-      });
+      // Get the first matching student
+      const studentData = querySnapshot.docs[0].data();
+      const actualStudentId = querySnapshot.docs[0].id;
+      
+      await processAttendance(studentData, actualStudentId);
+      
     } catch (error) {
       console.error("Error marking attendance:", error);
       setScanResult({
@@ -123,10 +85,62 @@ const QRScanPage = () => {
         title: "Error",
         description: "Failed to mark attendance. Please try again.",
       });
-    } finally {
       setIsScanComplete(true);
       setIsProcessing(false);
     }
+  };
+
+  const processAttendance = async (studentData: any, studentId: string) => {
+    if (!studentData) {
+      setScanResult({
+        success: false,
+        studentId,
+        message: "Failed to retrieve student information.",
+      });
+      setIsScanComplete(true);
+      setIsProcessing(false);
+      return;
+    }
+
+    const studentName = studentData.name;
+    const recordId = uuidv4();
+    const timestamp = serverTimestamp();
+
+    // Add attendance record to student's collection
+    await addDoc(collection(db, `students/${studentId}/attendance`), {
+      id: recordId,
+      timestamp,
+      teacherId: teacher.teacherId,
+      teacherName: teacher.name,
+      studentId: studentData.studentId,
+      studentName,
+    });
+
+    // Add attendance record to teacher's collection
+    await addDoc(collection(db, `teachers/${teacher.uid}/scanned_attendance`), {
+      id: recordId,
+      timestamp,
+      teacherId: teacher.teacherId,
+      teacherName: teacher.name,
+      studentId: studentData.studentId,
+      studentName,
+    });
+
+    // Update scan result
+    setScanResult({
+      success: true,
+      studentId: studentData.studentId,
+      studentName,
+      message: "Attendance marked successfully!",
+    });
+    
+    toast({
+      title: "Attendance Marked",
+      description: `${studentName} has been marked present.`,
+    });
+    
+    setIsScanComplete(true);
+    setIsProcessing(false);
   };
 
   const handleReset = () => {

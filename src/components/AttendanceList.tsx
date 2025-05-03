@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, orderBy, DocumentData, where, limit as limitQuery } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, DocumentData, where, limit as firestoreLimit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,13 +41,13 @@ const AttendanceList = ({ userData, limit }: AttendanceListProps) => {
       collectionPath = `students/${userData.uid}/attendance`;
       const collectionRef = collection(db, collectionPath);
       queryRef = limit 
-        ? query(collectionRef, orderBy("timestamp", "desc"), limitQuery(limit))
+        ? query(collectionRef, orderBy("timestamp", "desc"), firestoreLimit(limit))
         : query(collectionRef, orderBy("timestamp", "desc"));
     } else {
       collectionPath = `teachers/${userData.uid}/scanned_attendance`;
       const collectionRef = collection(db, collectionPath);
       queryRef = limit 
-        ? query(collectionRef, orderBy("timestamp", "desc"), limitQuery(limit))
+        ? query(collectionRef, orderBy("timestamp", "desc"), firestoreLimit(limit))
         : query(collectionRef, orderBy("timestamp", "desc"));
     }
 
@@ -59,7 +59,7 @@ const AttendanceList = ({ userData, limit }: AttendanceListProps) => {
           const data = doc.data();
           attendanceData.push({
             id: doc.id,
-            timestamp: data.timestamp.toDate(),
+            timestamp: data.timestamp?.toDate() || new Date(),
             teacherId: data.teacherId,
             teacherName: data.teacherName,
             studentId: data.studentId,
