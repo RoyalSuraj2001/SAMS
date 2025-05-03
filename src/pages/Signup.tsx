@@ -41,8 +41,8 @@ const Signup = () => {
     }
 
     try {
-      // Make sure we're passing the correct number of arguments to signup
-      await signup(email, password, name, role, idField);
+      // Fix: Pass the correct number of arguments to signup
+      await signup(email, password, { name, role, [role === 'student' ? 'studentId' : 'teacherId']: idField });
       toast({
         title: "Success",
         description: "Signup successful!",

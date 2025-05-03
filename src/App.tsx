@@ -15,6 +15,9 @@ import Signup from "./pages/Signup";
 // Student Pages
 import StudentDashboard from "./pages/student/StudentDashboard";
 import CalendarPage from "./pages/student/CalendarPage";
+import CoursesPage from "./pages/student/CoursesPage";
+import GradesPage from "./pages/student/GradesPage";
+import ProfilePage from "./pages/student/ProfilePage";
 
 // Teacher Pages
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
@@ -25,8 +28,15 @@ import TeacherCalendarPage from "./pages/teacher/TeacherCalendarPage";
 
 import NotFound from "./pages/NotFound";
 
-// Create a new QueryClient instance
-const queryClient = new QueryClient();
+// Create a new QueryClient instance with optimized configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  },
+});
 
 const AppRoutes = () => (
   <Routes>
@@ -43,6 +53,21 @@ const AppRoutes = () => (
     <Route path="/student/calendar" element={
       <ProtectedRoute allowedRole="student">
         <CalendarPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/student/courses" element={
+      <ProtectedRoute allowedRole="student">
+        <CoursesPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/student/grades" element={
+      <ProtectedRoute allowedRole="student">
+        <GradesPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/student/profile" element={
+      <ProtectedRoute allowedRole="student">
+        <ProfilePage />
       </ProtectedRoute>
     } />
     
@@ -81,22 +106,20 @@ const AppRoutes = () => (
   </Routes>
 );
 
+// Main App component
 const App = () => {
-  // Create the App component as a proper React component function
   return (
-    <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <TooltipProvider>
-              <AppRoutes />
-              <Toaster />
-              <Sonner />
-            </TooltipProvider>
-          </AuthProvider>
-        </QueryClientProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <AppRoutes />
+            <Toaster />
+            <Sonner />
+          </TooltipProvider>
+        </AuthProvider>
       </BrowserRouter>
-    </React.StrictMode>
+    </QueryClientProvider>
   );
 };
 

@@ -5,7 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import QRCodeDisplay from "@/components/QRCodeDisplay";
 import AttendanceList from "@/components/AttendanceList";
 import AttendanceChart from "@/components/AttendanceChart";
-import { Loader2, LogOut, Calendar } from "lucide-react";
+import { 
+  Loader2,
+  LogOut, 
+  Calendar, 
+  BookOpen, 
+  GraduationCap, 
+  User,
+  ChartBar
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 const StudentDashboard = () => {
@@ -22,6 +30,38 @@ const StudentDashboard = () => {
 
   const student = userData;
 
+  // Quick access links
+  const quickLinks = [
+    { 
+      title: "Calendar",
+      description: "View your attendance calendar",
+      icon: Calendar,
+      link: "/student/calendar",
+      color: "bg-blue-100"
+    },
+    { 
+      title: "Courses",
+      description: "View your courses",
+      icon: BookOpen,
+      link: "/student/courses",
+      color: "bg-purple-100"
+    },
+    { 
+      title: "Grades",
+      description: "Check your grades",
+      icon: GraduationCap,
+      link: "/student/grades",
+      color: "bg-green-100"
+    },
+    { 
+      title: "Profile",
+      description: "Manage your profile",
+      icon: User,
+      link: "/student/profile",
+      color: "bg-amber-100"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -29,12 +69,6 @@ const StudentDashboard = () => {
         <div className="container mx-auto px-4 py-4 md:py-6 flex justify-between items-center">
           <h1 className="text-xl md:text-2xl font-bold text-foreground">Student Dashboard</h1>
           <div className="flex items-center gap-2">
-            <Link to="/student/calendar">
-              <Button variant="outline" size="sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                Calendar
-              </Button>
-            </Link>
             <Button variant="ghost" size="sm" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
@@ -45,6 +79,40 @@ const StudentDashboard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6 md:py-8">
+        {/* Welcome Banner */}
+        <Card className="mb-6 bg-gradient-to-r from-purple-100 to-blue-100 border-none">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">Welcome back, {student.name}!</h2>
+                <p className="text-muted-foreground">Here's your attendance overview and quick access links</p>
+              </div>
+              <div className="hidden sm:block">
+                <ChartBar className="h-16 w-16 text-primary opacity-75" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Quick Access Links */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {quickLinks.map((link) => (
+            <Link to={link.link} key={link.title} className="block">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                <CardContent className="p-6 flex items-start space-x-4">
+                  <div className={`${link.color} p-3 rounded-md`}>
+                    <link.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">{link.title}</h3>
+                    <p className="text-sm text-muted-foreground">{link.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
@@ -99,6 +167,11 @@ const StudentDashboard = () => {
                     <span className="font-medium">{student.studentId}</span>
                   </div>
                 </div>
+                <div className="mt-4">
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/student/profile">View Full Profile</Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -110,7 +183,12 @@ const StudentDashboard = () => {
 
           {/* Right Column - Attendance History */}
           <div>
-            <AttendanceList userData={student} />
+            <AttendanceList userData={student} limit={5} />
+            <div className="mt-4 flex justify-end">
+              <Button variant="outline" asChild>
+                <Link to="/student/calendar">View Full Attendance History</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </main>
