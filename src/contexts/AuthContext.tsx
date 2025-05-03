@@ -49,11 +49,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const user = userCredential.user;
       
       // Create the user document in Firestore
-      await setDoc(doc(db, userData.role + "s", user.uid), {
-        ...userData,
-        email,
-        uid: user.uid,
-      });
+      if (userData.role === "student") {
+        await setDoc(doc(db, "students", user.uid), {
+          ...userData,
+          email,
+          uid: user.uid,
+        });
+      } else {
+        await setDoc(doc(db, "teachers", user.uid), {
+          ...userData, 
+          email,
+          uid: user.uid,
+        });
+      }
       
       toast({
         title: "Account created",
