@@ -13,11 +13,14 @@ import Signup from "./pages/Signup";
 
 // Student Pages
 import StudentDashboard from "./pages/student/StudentDashboard";
+import CalendarPage from "./pages/student/CalendarPage";
 
 // Teacher Pages
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import QRScanPage from "./pages/teacher/QRScanPage";
 import AttendancePage from "./pages/teacher/AttendancePage";
+import ReportsPage from "./pages/teacher/ReportsPage";
+import TeacherCalendarPage from "./pages/teacher/TeacherCalendarPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -35,6 +38,11 @@ const AppRoutes = () => (
         <StudentDashboard />
       </ProtectedRoute>
     } />
+    <Route path="/student/calendar" element={
+      <ProtectedRoute allowedRole="student">
+        <CalendarPage />
+      </ProtectedRoute>
+    } />
     
     {/* Teacher routes */}
     <Route path="/teacher/dashboard" element={
@@ -50,6 +58,16 @@ const AppRoutes = () => (
     <Route path="/teacher/attendance" element={
       <ProtectedRoute allowedRole="teacher">
         <AttendancePage />
+      </ProtectedRoute>
+    } />
+    <Route path="/teacher/reports" element={
+      <ProtectedRoute allowedRole="teacher">
+        <ReportsPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/teacher/calendar" element={
+      <ProtectedRoute allowedRole="teacher">
+        <TeacherCalendarPage />
       </ProtectedRoute>
     } />
     
