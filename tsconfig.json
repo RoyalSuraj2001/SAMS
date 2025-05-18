@@ -4,16 +4,24 @@
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ],
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
+  
+    "compilerOptions": {
+      "jsx": "react-jsx",
+      "esModuleInterop": true,
+      "composite": true,
+      "strict": true,
+      "baseUrl": ".",
+      "paths": {
+        "@/*": ["./src/*"]
+      },
+      "skipLibCheck": true,
+      "allowJs": true,
+      "strictNullChecks": true,
+      "moduleResolution": "node",
+      "target": "es5",
+      "lib": ["dom", "dom.iterable", "esnext"],
+      "types": ["react", "react-dom"]
     },
-    "noImplicitAny": false,
-    "noUnusedParameters": false,
-    "skipLibCheck": true,
-    "allowJs": true,
-    "noUnusedLocals": false,
-    "strictNullChecks": false
+    "include": ["src"],
+    "exclude": ["node_modules"]
   }
-}
