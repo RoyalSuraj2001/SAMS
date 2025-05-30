@@ -1,4 +1,4 @@
-# Welcome to my BCA project
+# Welcome to my BCAOL project
 
 ## Project info
 Student Side:
